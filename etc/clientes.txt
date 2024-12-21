@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "id": "b617eb2e-45d8-495b-9795-0311fe7e5232",
+      "isDeleted": false,
+      "name": "TERAPEUTICA FARMACIA DE MANIPULACAO LTDA",
+      "document": {},
+      "communication": {},
+      "address": {},
+      "bankAccountInformation": {},
+      "companyInformation": {},
+      "type": "Customer"
+    },
+  ],
+  "count": 1
+}
