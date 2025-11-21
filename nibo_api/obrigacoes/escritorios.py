@@ -38,7 +38,7 @@ class EscritoriosInterface:
             Dicionário com 'items' (lista de escritórios) e 'count' (total)
         """
         return self.client.get(
-            "/offices",
+            "/accountingfirms",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,

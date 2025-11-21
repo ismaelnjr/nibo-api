@@ -17,17 +17,33 @@ class TestClientes(unittest.TestCase):
     
     def test_listar_clientes(self):
         """Testa listagem de clientes"""
-        resultado = self.client.clientes.listar()
+        # Primeiro obtém um ID de escritório
+        escritorios = self.client.escritorios.listar()
+        self.assertGreater(len(escritorios["items"]), 0, "Nenhum escritório encontrado")
+        
+        accounting_firm_id = UUID(escritorios["items"][0]["id"])
+        resultado = self.client.clientes.listar(accounting_firm_id)
         
         self.assertIn("items", resultado)
-        self.assertIn("count", resultado)
         self.assertIsInstance(resultado["items"], list)
-        self.assertIsInstance(resultado["count"], int)
+        # A API de Obrigações retorna 'metadata' ao invés de 'count'
+        self.assertIn("metadata", resultado)
     
     def test_criar_cliente(self):
         """Testa criação de cliente"""
+        # Primeiro obtém um ID de escritório
+        escritorios = self.client.escritorios.listar()
+        self.assertGreater(len(escritorios["items"]), 0, "Nenhum escritório encontrado")
+        
+        accounting_firm_id = UUID(escritorios["items"][0]["id"])
+        import time
+        # Usa timestamp para garantir código único
+        code = f"TESTE-{int(time.time())}"
         resultado = self.client.clientes.criar(
-            name="TESTE CLIENTE OBRIGACOES API"
+            accounting_firm_id=accounting_firm_id,
+            name="TESTE CLIENTE OBRIGACOES API",
+            code=code,  # Campo obrigatório
+            documentNumber="12345678909"  # CPF válido para teste
         )
         
         self.assertIn("id", resultado)

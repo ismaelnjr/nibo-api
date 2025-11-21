@@ -21,25 +21,27 @@ class ResponsabilidadesInterface:
     
     def listar_responsaveis_clientes(
         self,
+        accounting_firm_id: UUID,
         odata_filter: Optional[str] = None,
         odata_orderby: Optional[str] = None,
         odata_top: Optional[int] = None,
         odata_skip: Optional[int] = None
     ) -> Dict[str, Any]:
         """
-        Lista responsáveis pelos clientes
+        Lista responsáveis pelos clientes de um escritório
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             odata_filter: Filtro OData
             odata_orderby: Campo para ordenação
             odata_top: Limite de registros
             odata_skip: Registros a pular
             
         Returns:
-            Dicionário com 'items' (lista de responsáveis) e 'count' (total)
+            Dicionário com 'items' (lista de responsáveis) e 'metadata'
         """
         return self.client.get(
-            "/responsibilities",
+            f"/accountingfirms/{accounting_firm_id}/responsibilities",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,
@@ -48,6 +50,7 @@ class ResponsabilidadesInterface:
     
     def transferir_responsavel(
         self,
+        accounting_firm_id: UUID,
         cliente_id: UUID,
         user_id: UUID,
         **kwargs
@@ -56,6 +59,7 @@ class ResponsabilidadesInterface:
         Transfere responsável pelo cliente
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             cliente_id: UUID do cliente
             user_id: UUID do usuário responsável
             **kwargs: Outros campos opcionais
@@ -69,7 +73,7 @@ class ResponsabilidadesInterface:
         payload.update(kwargs)
         
         return self.client.post(
-            f"/responsibilities/{cliente_id}/transfer",
+            f"/accountingfirms/{accounting_firm_id}/customers/{cliente_id}/responsibilities/transfer",
             json_data=payload
         )
 

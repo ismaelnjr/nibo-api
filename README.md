@@ -18,19 +18,25 @@ Crie um arquivo `config.json` na raiz do projeto:
 
 ```json
 {
-  "api_token": "SEU_TOKEN_AQUI",
+  "api_token": "SEU_TOKEN_EMPRESA_AQUI",
+  "obrigacoes_api_token": "SEU_TOKEN_OBRIGACOES_AQUI",
   "empresa_base_url": "https://api.nibo.com.br/empresas/v1",
-  "obrigacoes_base_url": "https://api.nibo.com.br/obrigacoes/v1"
+  "obrigacoes_base_url": "https://api.nibo.com.br/accountant/api/v1",
+  "obrigacoes_user_id": "SEU_USER_ID_AQUI"
 }
 ```
+
+**Nota**: O `obrigacoes_user_id` é opcional e só é necessário se o token de Obrigações não estiver vinculado a um usuário específico. Se `obrigacoes_api_token` não for fornecido, o sistema usará `api_token` como fallback.
 
 ### Variáveis de Ambiente (Alternativa)
 
 Você também pode usar variáveis de ambiente:
 
-- `NIBO_API_TOKEN`: Token de API do Nibo
-- `NIBO_EMPRESA_BASE_URL`: URL base da API Empresa (opcional)
-- `NIBO_OBRIGACOES_BASE_URL`: URL base da API Obrigações (opcional)
+- `NIBO_API_TOKEN`: Token de API do Nibo Empresa
+- `NIBO_OBRIGACOES_API_TOKEN`: Token de API do Nibo Obrigações (opcional, usa `NIBO_API_TOKEN` como fallback)
+- `NIBO_OBRIGACOES_USER_ID`: User ID para API Obrigações (opcional)
+- `NIBO_EMPRESA_BASE_URL`: URL base da API Empresa (opcional, padrão: `https://api.nibo.com.br/empresas/v1`)
+- `NIBO_OBRIGACOES_BASE_URL`: URL base da API Obrigações (opcional, padrão: `https://api.nibo.com.br/accountant/api/v1`)
 
 ## Uso
 
@@ -88,6 +94,7 @@ agendamento = client.agendamentos_receber.agendar(
 ```python
 from nibo_api.config import NiboConfig
 from nibo_api.obrigacoes.client import NiboObrigacoesClient
+from uuid import UUID
 
 # Inicializa o cliente
 config = NiboConfig()
@@ -95,15 +102,38 @@ client = NiboObrigacoesClient(config)
 
 # Lista escritórios
 escritorios = client.escritorios.listar()
+accounting_firm_id = UUID(escritorios["items"][0]["id"])
 
-# Lista contatos
-contatos = client.contatos.listar()
+# Lista contatos vinculados a um escritório
+contatos = client.contatos.listar(accounting_firm_id)
 
-# Lista clientes
-clientes = client.clientes.listar()
+# Lista clientes vinculados a um escritório
+clientes = client.clientes.listar(accounting_firm_id)
+
+# Cria um novo cliente
+novo_cliente = client.clientes.criar(
+    accounting_firm_id=accounting_firm_id,
+    name="Cliente Teste",
+    code="CLI-001",
+    document_number="12345678901"
+)
+
+# Lista grupos de clientes (tags)
+grupos = client.grupos_clientes.listar(accounting_firm_id)
+
+# Lista relatórios de obrigações
+relatorios = client.relatorios.listar_relatorios(accounting_firm_id)
+
+# Lista tarefas
+tarefas = client.tarefas.listar(accounting_firm_id)
 
 # Cria uma nova tarefa
-tarefa = client.tarefas.criar(name="Nova tarefa")
+tarefa = client.tarefas.criar(
+    accounting_firm_id=accounting_firm_id,
+    name="Nova tarefa",
+    customer_id=UUID("..."),
+    task_template_id=UUID("...")
+)
 ```
 
 ## Estrutura do Projeto
@@ -170,15 +200,17 @@ nibo-api/
 - **Usuários**: Membros da equipe
 - **Arquivos**: Criação para upload
 - **Conferência**: Envio para tela de conferência
-- **Contatos**: CRUD completo com departamentos
-- **Clientes**: CRUD completo com grupos
-- **CNAEs**: Listagem
-- **Grupos de Clientes**: Listagem
-- **Departamentos**: Listagem
-- **Tarefas**: Listagem e criação
-- **Templates de Tarefas**: Listagem
-- **Responsabilidades**: Listagem e transferência
-- **Relatórios**: Listagem
+- **Contatos**: CRUD completo com departamentos (requer `accounting_firm_id`)
+- **Clientes**: CRUD completo com grupos (requer `accounting_firm_id`)
+- **CNAEs**: Listagem (requer `accounting_firm_id`)
+- **Grupos de Clientes (Tags)**: Listagem (requer `accounting_firm_id`, endpoint: `/tags`)
+- **Departamentos**: Listagem (requer `accounting_firm_id`)
+- **Tarefas**: Listagem e criação (requer `accounting_firm_id`)
+- **Templates de Tarefas**: Listagem (requer `accounting_firm_id`)
+- **Responsabilidades**: Listagem e transferência (requer `accounting_firm_id`)
+- **Relatórios**: Listagem de relatórios de obrigações (requer `accounting_firm_id`, endpoint: `/reports/obligations/complete`)
+
+**Nota**: A maioria dos endpoints da API de Obrigações requer o `accounting_firm_id` (ID do escritório contábil) como parâmetro. Você pode obter esse ID através do endpoint de listagem de escritórios.
 
 ## Suporte a OData
 
@@ -220,7 +252,27 @@ except NiboNotFoundError:
     print("Cliente não encontrado")
 except NiboAuthenticationError:
     print("Erro de autenticação")
+except NiboValidationError:
+    print("Erro de validação - verifique os dados enviados")
+except NiboRateLimitError:
+    print("Limite de requisições excedido")
+except NiboServerError:
+    print("Erro no servidor")
 ```
+
+### Códigos de Status HTTP
+
+O cliente trata os seguintes códigos de status como sucesso:
+- `200 OK`: Requisição bem-sucedida
+- `201 Created`: Recurso criado com sucesso
+- `202 Accepted`: Requisição aceita (alguns endpoints de criação retornam 202 com corpo vazio)
+
+Erros comuns:
+- `400 Bad Request`: `NiboValidationError` - Dados inválidos
+- `401 Unauthorized`: `NiboAuthenticationError` - Token inválido ou expirado
+- `404 Not Found`: `NiboNotFoundError` - Recurso não encontrado
+- `429 Too Many Requests`: `NiboRateLimitError` - Limite de requisições excedido
+- `5xx Server Error`: `NiboServerError` - Erro no servidor
 
 ## Testes
 
@@ -237,11 +289,23 @@ python -m unittest tests.test_empresa.test_clientes
 python -m unittest tests.test_obrigacoes.test_escritorios
 ```
 
+## Autenticação
+
+### Nibo Empresa
+A API de Empresa usa o header `ApiToken` para autenticação.
+
+### Nibo Obrigações
+A API de Obrigações usa:
+- Header `X-API-Key`: Token de API de Obrigações
+- Header `X-User-Id`: User ID (opcional, necessário se o token não estiver vinculado a um usuário)
+
 ## Documentação da API
 
 Para mais detalhes sobre os endpoints disponíveis, consulte a documentação oficial:
 - [Nibo Empresa API](https://nibo.readme.io/reference/como-utilizar-a-api)
 - [Nibo Obrigações API](https://nibo.readme.io/reference/como-utilizar-a-api)
+- [Listar Grupos de Clientes](https://nibo.readme.io/reference/listar-grupos-de-clientes)
+- [Listar Relatórios](https://nibo.readme.io/reference/listar-relatorios)
 
 ## Licença
 

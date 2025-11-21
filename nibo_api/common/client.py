@@ -53,7 +53,7 @@ class BaseClient:
             NiboServerError: Erros 5xx
             NiboAPIError: Outros erros
         """
-        if response.status_code == 200 or response.status_code == 201:
+        if response.status_code in (200, 201, 202):
             try:
                 return response.json()
             except ValueError:

@@ -2,6 +2,7 @@
 Testes para interface de CNAEs do Nibo Obrigações
 """
 import unittest
+from uuid import UUID
 from nibo_api.config import NiboConfig
 from nibo_api.obrigacoes.client import NiboObrigacoesClient
 
@@ -13,15 +14,20 @@ class TestCNAEs(unittest.TestCase):
         """Configuração inicial dos testes"""
         self.config = NiboConfig()
         self.client = NiboObrigacoesClient(self.config)
+        # Obtém um ID de escritório para usar nos testes
+        escritorios = self.client.escritorios.listar()
+        self.assertGreater(len(escritorios["items"]), 0, "Nenhum escritório encontrado")
+        self.accounting_firm_id = UUID(escritorios["items"][0]["id"])
     
     def test_listar_cnaes(self):
         """Testa listagem de CNAEs"""
-        resultado = self.client.cnaes.listar()
+        resultado = self.client.cnaes.listar(self.accounting_firm_id)
         
-        self.assertIn("items", resultado)
-        self.assertIn("count", resultado)
-        self.assertIsInstance(resultado["items"], list)
-        self.assertIsInstance(resultado["count"], int)
+        # CNAEs retorna uma lista direta, não um objeto com items
+        self.assertIsInstance(resultado, list)
+        if len(resultado) > 0:
+            self.assertIn("id", resultado[0])
+            self.assertIn("description", resultado[0])
 
 
 if __name__ == "__main__":

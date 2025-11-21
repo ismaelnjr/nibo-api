@@ -19,9 +19,9 @@ class TestEscritorios(unittest.TestCase):
         resultado = self.client.escritorios.listar()
         
         self.assertIn("items", resultado)
-        self.assertIn("count", resultado)
         self.assertIsInstance(resultado["items"], list)
-        self.assertIsInstance(resultado["count"], int)
+        # A API de Obrigações retorna 'metadata' (pode ser None) ao invés de 'count'
+        self.assertIn("metadata", resultado)
 
 
 if __name__ == "__main__":

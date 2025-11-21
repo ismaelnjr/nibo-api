@@ -17,33 +17,45 @@ class TestContatos(unittest.TestCase):
     
     def test_listar_contatos(self):
         """Testa listagem de contatos"""
-        resultado = self.client.contatos.listar()
+        # Primeiro obtém um ID de escritório
+        escritorios = self.client.escritorios.listar()
+        self.assertGreater(len(escritorios["items"]), 0, "Nenhum escritório encontrado")
+        
+        accounting_firm_id = UUID(escritorios["items"][0]["id"])
+        resultado = self.client.contatos.listar(accounting_firm_id)
         
         self.assertIn("items", resultado)
-        self.assertIn("count", resultado)
         self.assertIsInstance(resultado["items"], list)
-        self.assertIsInstance(resultado["count"], int)
+        self.assertIn("metadata", resultado)
     
     def test_buscar_contato_por_id(self):
         """Testa busca de contato por ID"""
-        # Primeiro lista contatos para pegar um ID válido
-        contatos = self.client.contatos.listar(odata_top=1)
+        # Primeiro obtém um ID de escritório e lista contatos
+        escritorios = self.client.escritorios.listar()
+        self.assertGreater(len(escritorios["items"]), 0, "Nenhum escritório encontrado")
+        
+        accounting_firm_id = UUID(escritorios["items"][0]["id"])
+        contatos = self.client.contatos.listar(accounting_firm_id, odata_top=1)
         
         if contatos["items"]:
             contato_id = UUID(contatos["items"][0]["id"])
-            resultado = self.client.contatos.buscar_por_id(contato_id)
+            resultado = self.client.contatos.buscar_por_id(accounting_firm_id, contato_id)
             
             self.assertIn("id", resultado)
             self.assertEqual(str(resultado["id"]), str(contato_id))
     
     def test_listar_departamentos(self):
         """Testa listagem de departamentos de um contato"""
-        # Primeiro lista contatos para pegar um ID válido
-        contatos = self.client.contatos.listar(odata_top=1)
+        # Primeiro obtém um ID de escritório e lista contatos
+        escritorios = self.client.escritorios.listar()
+        self.assertGreater(len(escritorios["items"]), 0, "Nenhum escritório encontrado")
+        
+        accounting_firm_id = UUID(escritorios["items"][0]["id"])
+        contatos = self.client.contatos.listar(accounting_firm_id, odata_top=1)
         
         if contatos["items"]:
             contato_id = UUID(contatos["items"][0]["id"])
-            resultado = self.client.contatos.listar_departamentos(contato_id)
+            resultado = self.client.contatos.listar_departamentos(accounting_firm_id, contato_id)
             
             self.assertIsInstance(resultado, (dict, list))
 

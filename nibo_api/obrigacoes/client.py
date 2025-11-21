@@ -33,6 +33,19 @@ class NiboObrigacoesClient(BaseClient):
             config = NiboConfig()
         super().__init__(config, base_url=config.obrigacoes_base_url)
         
+        # Remove o header ApiToken padrão e adiciona os headers corretos para Obrigações
+        self.session.headers.pop("ApiToken", None)
+        self.session.headers.update({
+            "X-API-Key": config.obrigacoes_api_token
+        })
+        
+        # Adiciona X-User-Id se fornecido (necessário se token não estiver vinculado a usuário)
+        user_id = config.obrigacoes_user_id
+        if user_id:
+            self.session.headers.update({
+                "X-User-Id": user_id
+            })
+        
         # Inicializa interfaces
         self.escritorios = EscritoriosInterface(self)
         self.usuarios = UsuariosInterface(self)

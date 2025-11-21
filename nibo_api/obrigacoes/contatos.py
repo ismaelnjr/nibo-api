@@ -21,45 +21,55 @@ class ContatosInterface:
     
     def listar(
         self,
+        accounting_firm_id: UUID,
         odata_filter: Optional[str] = None,
         odata_orderby: Optional[str] = None,
         odata_top: Optional[int] = None,
         odata_skip: Optional[int] = None
     ) -> Dict[str, Any]:
         """
-        Lista todos os contatos
+        Lista todos os contatos de um escritório
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             odata_filter: Filtro OData
             odata_orderby: Campo para ordenação
             odata_top: Limite de registros
             odata_skip: Registros a pular
             
         Returns:
-            Dicionário com 'items' (lista de contatos) e 'count' (total)
+            Dicionário com 'items' (lista de contatos) e 'metadata'
         """
         return self.client.get(
-            "/contacts",
+            f"/accountingfirms/{accounting_firm_id}/contacts",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,
             odata_skip=odata_skip
         )
     
-    def buscar_por_id(self, contato_id: UUID) -> Dict[str, Any]:
+    def buscar_por_id(
+        self,
+        accounting_firm_id: UUID,
+        contato_id: UUID
+    ) -> Dict[str, Any]:
         """
         Busca um contato específico
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             contato_id: UUID do contato
             
         Returns:
             Dados do contato
         """
-        return self.client.get(f"/contacts/{contato_id}")
+        return self.client.get(
+            f"/accountingfirms/{accounting_firm_id}/contacts/{contato_id}"
+        )
     
     def listar_departamentos(
         self,
+        accounting_firm_id: UUID,
         contato_id: UUID,
         odata_filter: Optional[str] = None,
         odata_orderby: Optional[str] = None,
@@ -70,6 +80,7 @@ class ContatosInterface:
         Lista os departamentos de um contato
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             contato_id: UUID do contato
             odata_filter: Filtro OData
             odata_orderby: Campo para ordenação
@@ -77,10 +88,10 @@ class ContatosInterface:
             odata_skip: Registros a pular
             
         Returns:
-            Dicionário com 'items' (lista de departamentos) e 'count' (total)
+            Dicionário com 'items' (lista de departamentos) e 'metadata'
         """
         return self.client.get(
-            f"/contacts/{contato_id}/departments",
+            f"/accountingfirms/{accounting_firm_id}/contacts/{contato_id}/departments",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,
@@ -89,6 +100,7 @@ class ContatosInterface:
     
     def criar(
         self,
+        accounting_firm_id: UUID,
         name: str,
         **kwargs
     ) -> Dict[str, Any]:
@@ -96,6 +108,7 @@ class ContatosInterface:
         Cria um novo contato
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             name: Nome do contato
             **kwargs: Outros campos opcionais
             
@@ -107,10 +120,14 @@ class ContatosInterface:
         }
         payload.update(kwargs)
         
-        return self.client.post("/contacts", json_data=payload)
+        return self.client.post(
+            f"/accountingfirms/{accounting_firm_id}/contacts",
+            json_data=payload
+        )
     
     def adicionar_departamentos(
         self,
+        accounting_firm_id: UUID,
         contato_id: UUID,
         department_ids: list,
         **kwargs
@@ -119,6 +136,7 @@ class ContatosInterface:
         Adiciona departamentos a um contato
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             contato_id: UUID do contato
             department_ids: Lista de UUIDs dos departamentos
             **kwargs: Outros campos opcionais
@@ -132,12 +150,13 @@ class ContatosInterface:
         payload.update(kwargs)
         
         return self.client.post(
-            f"/contacts/{contato_id}/departments",
+            f"/accountingfirms/{accounting_firm_id}/contacts/{contato_id}/departments",
             json_data=payload
         )
     
     def remover_departamento(
         self,
+        accounting_firm_id: UUID,
         contato_id: UUID,
         department_id: UUID
     ) -> Dict[str, Any]:
@@ -145,6 +164,7 @@ class ContatosInterface:
         Remove departamento de um contato
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             contato_id: UUID do contato
             department_id: UUID do departamento
             
@@ -152,6 +172,6 @@ class ContatosInterface:
             Resposta da API
         """
         return self.client.delete(
-            f"/contacts/{contato_id}/departments/{department_id}"
+            f"/accountingfirms/{accounting_firm_id}/contacts/{contato_id}/departments/{department_id}"
         )
 

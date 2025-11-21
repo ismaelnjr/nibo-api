@@ -39,7 +39,7 @@ class NiboConfig:
     @property
     def api_token(self) -> str:
         """
-        Token de API do Nibo
+        Token de API do Nibo Empresa (padrão)
         
         Returns:
             Token de API (prioridade: variável de ambiente > config.json)
@@ -49,6 +49,25 @@ class NiboConfig:
             raise ValueError(
                 "Token de API não encontrado. Configure NIBO_API_TOKEN como "
                 "variável de ambiente ou adicione 'api_token' em config.json"
+            )
+        return token
+    
+    @property
+    def obrigacoes_api_token(self) -> str:
+        """
+        Token de API do Nibo Obrigações
+        
+        Returns:
+            Token de API de Obrigações (prioridade: variável de ambiente > config.json > api_token padrão)
+        """
+        token = (
+            os.getenv("NIBO_OBRIGACOES_API_TOKEN") 
+            or self._config.get("obrigacoes_api_token")
+            or self.api_token  # Fallback para token padrão se não especificado
+        )
+        if not token:
+            raise ValueError(
+                "Token de API de Obrigações não encontrado."
             )
         return token
     
@@ -72,12 +91,25 @@ class NiboConfig:
         URL base da API Nibo Obrigações
         
         Returns:
-            URL base (padrão: https://api.nibo.com.br/obrigacoes/v1)
+            URL base (padrão: https://api.nibo.com.br/accountant/api/v1)
         """
         return (
             os.getenv("NIBO_OBRIGACOES_BASE_URL")
             or self._config.get("obrigacoes_base_url")
-            or "https://api.nibo.com.br/obrigacoes/v1"
+            or "https://api.nibo.com.br/accountant/api/v1"
+        )
+    
+    @property
+    def obrigacoes_user_id(self) -> Optional[str]:
+        """
+        User ID para API Nibo Obrigações (opcional, necessário se token não estiver vinculado a usuário)
+        
+        Returns:
+            User ID (prioridade: variável de ambiente > config.json)
+        """
+        return (
+            os.getenv("NIBO_OBRIGACOES_USER_ID")
+            or self._config.get("obrigacoes_user_id")
         )
     
     def save_config(self, config: dict):

@@ -21,6 +21,7 @@ class ConferenciaInterface:
     
     def enviar_tela_conferencia(
         self,
+        accounting_firm_id: UUID,
         task_id: UUID,
         **kwargs
     ) -> Dict[str, Any]:
@@ -28,6 +29,7 @@ class ConferenciaInterface:
         Envia para tela de conferência
         
         Args:
+            accounting_firm_id: UUID do escritório contábil
             task_id: UUID da tarefa
             **kwargs: Outros campos opcionais
             
@@ -39,5 +41,8 @@ class ConferenciaInterface:
         }
         payload.update(kwargs)
         
-        return self.client.post("/conference", json_data=payload)
+        return self.client.post(
+            f"/accountingfirms/{accounting_firm_id}/conference",
+            json_data=payload
+        )
 
