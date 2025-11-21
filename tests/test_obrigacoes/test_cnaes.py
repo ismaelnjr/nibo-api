@@ -28,6 +28,8 @@ class TestCNAEs(unittest.TestCase):
         if len(resultado) > 0:
             self.assertIn("id", resultado[0])
             self.assertIn("description", resultado[0])
+        else:
+            self.fail("Nenhum CNAE encontrado")
 
 
 if __name__ == "__main__":
