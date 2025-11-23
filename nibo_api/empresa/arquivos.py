@@ -49,9 +49,8 @@ class ArquivosInterface:
             # Usa requests diretamente para upload de arquivo
             import requests
             url = f"{self.client.base_url}/files"
-            headers = {
-                "ApiToken": self.client.config.api_token
-            }
+            # Usa os headers da sessão que já contém o token correto
+            headers = self.client.session.headers.copy()
             
             response = requests.post(url, files=files, data=data, headers=headers)
             return self.client._handle_response(response)

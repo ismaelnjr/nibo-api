@@ -1,24 +1,24 @@
 """
-Interface para gerenciamento de empresas no Nibo Empresa
+Interface para gerenciamento de organizações no Nibo Empresa
 """
 from typing import Optional, Dict, Any
 
 from nibo_api.common.client import BaseClient
 
 
-class EmpresasInterface:
-    """Interface para operações com empresas"""
+class OrganizacoesInterface:
+    """Interface para operações com organizações"""
     
     def __init__(self, client: BaseClient):
         """
-        Inicializa a interface de empresas
+        Inicializa a interface de organizações
         
         Args:
             client: Instância do cliente HTTP base
         """
         self.client = client
     
-    def listar(
+    def listar_organizacoes(
         self,
         odata_filter: Optional[str] = None,
         odata_orderby: Optional[str] = None,
@@ -26,7 +26,7 @@ class EmpresasInterface:
         odata_skip: Optional[int] = None
     ) -> Dict[str, Any]:
         """
-        Lista todas as empresas
+        Lista todas as organizações que o usuário administrador tem acesso
         
         Args:
             odata_filter: Filtro OData
@@ -35,10 +35,10 @@ class EmpresasInterface:
             odata_skip: Registros a pular
             
         Returns:
-            Dicionário com 'items' (lista de empresas) e 'count' (total)
+            Dicionário com lista de organizações
         """
         return self.client.get(
-            "/companies",
+            "/organizations",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,
@@ -53,7 +53,7 @@ class EmpresasInterface:
         odata_skip: Optional[int] = None
     ) -> Dict[str, Any]:
         """
-        Lista usuários da empresa
+        Lista usuários da organização
         
         Args:
             odata_filter: Filtro OData
@@ -65,7 +65,7 @@ class EmpresasInterface:
             Dicionário com 'items' (lista de usuários) e 'count' (total)
         """
         return self.client.get(
-            "/companies/users",
+            "/users",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,

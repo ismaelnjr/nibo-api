@@ -2,7 +2,7 @@
 Testes para interface de escritórios do Nibo Obrigações
 """
 import unittest
-from nibo_api.config import NiboConfig
+from nibo_api.settings import NiboSettings
 from nibo_api.obrigacoes.client import NiboObrigacoesClient
 
 
@@ -11,7 +11,7 @@ class TestEscritorios(unittest.TestCase):
     
     def setUp(self):
         """Configuração inicial dos testes"""
-        self.config = NiboConfig()
+        self.config = NiboSettings()
         self.client = NiboObrigacoesClient(self.config)
     
     def test_listar_escritorios(self):

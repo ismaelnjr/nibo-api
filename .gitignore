@@ -20,6 +20,7 @@ __pycache__/
 
 # Arquivos de configuração local (com token)
 config.json
+tokens.json
 
 # Workspace do VS Code
 *.code-workspace

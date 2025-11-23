@@ -2,7 +2,7 @@
 Cliente principal para a API Nibo Obrigações
 """
 from typing import Optional
-from nibo_api.config import NiboConfig
+from nibo_api.settings import NiboSettings
 from nibo_api.common.client import BaseClient
 from nibo_api.obrigacoes.escritorios import EscritoriosInterface
 from nibo_api.obrigacoes.usuarios import UsuariosInterface
@@ -22,15 +22,15 @@ from nibo_api.obrigacoes.relatorios import RelatoriosInterface
 class NiboObrigacoesClient(BaseClient):
     """Cliente principal para interagir com a API Nibo Obrigações"""
     
-    def __init__(self, config: Optional[NiboConfig] = None):
+    def __init__(self, config: Optional[NiboSettings] = None):
         """
         Inicializa o cliente Nibo Obrigações
         
         Args:
-            config: Instância de NiboConfig. Se None, cria uma nova.
+            config: Instância de NiboSettings. Se None, cria uma nova.
         """
         if config is None:
-            config = NiboConfig()
+            config = NiboSettings()
         super().__init__(config, base_url=config.obrigacoes_base_url)
         
         # Remove o header ApiToken padrão e adiciona os headers corretos para Obrigações

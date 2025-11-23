@@ -5,7 +5,7 @@ import requests
 from typing import Optional, Dict, Any, List
 from urllib.parse import urlencode
 
-from nibo_api.config import NiboConfig
+from nibo_api.settings import NiboSettings
 from nibo_api.common.exceptions import (
     NiboAPIError,
     NiboAuthenticationError,
@@ -19,21 +19,42 @@ from nibo_api.common.exceptions import (
 class BaseClient:
     """Cliente HTTP base com autenticação e suporte a OData"""
     
-    def __init__(self, config: Optional[NiboConfig] = None, base_url: str = ""):
+    def __init__(
+        self, 
+        config: Optional[NiboSettings] = None, 
+        base_url: str = "",
+        organizacao_id: Optional[str] = None,
+        organizacao_codigo: Optional[str] = None
+    ):
         """
         Inicializa o cliente base
         
         Args:
-            config: Instância de NiboConfig. Se None, cria uma nova.
+            config: Instância de NiboSettings. Se None, cria uma nova.
             base_url: URL base da API
+            organizacao_id: ID da organização (ex: "org_123")
+            organizacao_codigo: Código simplificado da organização (ex: "empresa_principal")
         """
-        self.config = config or NiboConfig()
+        self.config = config or NiboSettings()
         self.base_url = base_url
+        self.organizacao_id = organizacao_id
+        self.organizacao_codigo = organizacao_codigo
+        
         self.session = requests.Session()
         self.session.headers.update({
-            "accept": "application/json",
-            "ApiToken": self.config.api_token
+            "accept": "application/json"
         })
+        
+        # Obtém token baseado na organização apenas se fornecido
+        # (subclasses como NiboObrigacoesClient configuram seus próprios headers)
+        if organizacao_id or organizacao_codigo:
+            api_token = self.config.get_api_token(
+                organizacao_id=organizacao_id,
+                organizacao_codigo=organizacao_codigo
+            )
+            self.session.headers.update({
+                "ApiToken": api_token
+            })
     
     def _handle_response(self, response: requests.Response) -> Any:
         """

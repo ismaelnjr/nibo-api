@@ -3,7 +3,7 @@ Testes para interface de clientes do Nibo Obrigações
 """
 import unittest
 from uuid import UUID
-from nibo_api.config import NiboConfig
+from nibo_api.settings import NiboSettings
 from nibo_api.obrigacoes.client import NiboObrigacoesClient
 
 
@@ -12,7 +12,7 @@ class TestClientes(unittest.TestCase):
     
     def setUp(self):
         """Configuração inicial dos testes"""
-        self.config = NiboConfig()
+        self.config = NiboSettings()
         self.client = NiboObrigacoesClient(self.config)
     
     def test_listar_clientes(self):

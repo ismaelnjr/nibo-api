@@ -1,0 +1,13 @@
+{
+  "api_tokens": {
+    "NC": "B00CDAC02003490694C2C3472B270797"
+  },
+  "organizacoes": {},
+  "obrigacoes_api_token": "e777d7526f1a8b714692d1b2b145c9da154a9179d1fc39c221568124a53bbdda",
+  "empresa_base_url": "https://api.nibo.com.br/empresas/v1",
+  "obrigacoes_base_url": "https://api.nibo.com.br/accountant/api/v1",
+  "obrigacoes_user_id": null,
+  "tokens_path": null,
+  "suppress_security_warnings": true
+}
+

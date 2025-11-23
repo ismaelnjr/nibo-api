@@ -12,43 +12,134 @@ pip install -r requirements.txt
 
 ## Configuração
 
-### Arquivo config.json
+### Arquivo settings.json
 
-Crie um arquivo `config.json` na raiz do projeto:
+Crie um arquivo `settings.json` na raiz do projeto:
 
 ```json
 {
-  "api_token": "SEU_TOKEN_EMPRESA_AQUI",
+  "api_tokens": {
+    "org_123": "TOKEN_ORGANIZACAO_1",
+    "empresa_principal": "TOKEN_ORGANIZACAO_2",
+    "org_456": "TOKEN_ORGANIZACAO_3"
+  },
+  "organizacoes": {
+    "empresa_principal": "org_123"
+  },
   "obrigacoes_api_token": "SEU_TOKEN_OBRIGACOES_AQUI",
   "empresa_base_url": "https://api.nibo.com.br/empresas/v1",
   "obrigacoes_base_url": "https://api.nibo.com.br/accountant/api/v1",
-  "obrigacoes_user_id": "SEU_USER_ID_AQUI"
+  "obrigacoes_user_id": null,
+  "tokens_path": null
 }
 ```
 
-**Nota**: O `obrigacoes_user_id` é opcional e só é necessário se o token de Obrigações não estiver vinculado a um usuário específico. Se `obrigacoes_api_token` não for fornecido, o sistema usará `api_token` como fallback.
+**Estrutura de Tokens:**
+- `API_TOKENS`: Dicionário com tokens por organização. Você pode usar:
+  - **ID da organização** (ex: `"org_123"`) - ID retornado pela API
+  - **Código simplificado** (ex: `"empresa_principal"`) - Código personalizado para facilitar referência
+- `ORGANIZACOES`: Mapeamento opcional de código simplificado para ID da organização
 
-### Variáveis de Ambiente (Alternativa)
+**Nota**: O `OBRIGACOES_USER_ID` é opcional e só é necessário se o token de Obrigações não estiver vinculado a um usuário específico.
 
-Você também pode usar variáveis de ambiente:
+### Arquivo Separado para Tokens (Recomendado para Segurança)
 
-- `NIBO_API_TOKEN`: Token de API do Nibo Empresa
-- `NIBO_OBRIGACOES_API_TOKEN`: Token de API do Nibo Obrigações (opcional, usa `NIBO_API_TOKEN` como fallback)
+Para maior segurança, você pode usar um arquivo `tokens.json` separado:
+
+```json
+{
+  "api_tokens": {
+    "org_123": "TOKEN_ORGANIZACAO_1",
+    "empresa_principal": "TOKEN_ORGANIZACAO_2"
+  }
+}
+```
+
+E referenciar no `settings.json`:
+
+```json
+{
+  "tokens_path": "tokens.json",
+  "organizacoes": {
+    "empresa_principal": "org_123"
+  },
+  "obrigacoes_api_token": "SEU_TOKEN_OBRIGACOES_AQUI"
+}
+```
+
+### Variáveis de Ambiente (Prioritário - Mais Seguro)
+
+As variáveis de ambiente têm prioridade sobre o arquivo `settings.json`. Use o formato:
+
+- `NIBO_API_TOKEN_<ID_OU_CODIGO>`: Token para organização específica
+  - Exemplo: `NIBO_API_TOKEN_org_123` ou `NIBO_API_TOKEN_empresa_principal`
+- `NIBO_OBRIGACOES_API_TOKEN`: Token de API do Nibo Obrigações
 - `NIBO_OBRIGACOES_USER_ID`: User ID para API Obrigações (opcional)
 - `NIBO_EMPRESA_BASE_URL`: URL base da API Empresa (opcional, padrão: `https://api.nibo.com.br/empresas/v1`)
 - `NIBO_OBRIGACOES_BASE_URL`: URL base da API Obrigações (opcional, padrão: `https://api.nibo.com.br/accountant/api/v1`)
+- `NIBO_TOKENS_FILE`: Caminho para arquivo de tokens separado (opcional)
+- `NIBO_ENCRYPTION_KEY`: Chave para descriptografar tokens criptografados (opcional)
+
+### Criptografia de Tokens (Opcional)
+
+Para maior segurança, você pode criptografar os tokens no arquivo `settings.json`. Tokens criptografados devem ter o prefixo `encrypted:`:
+
+```json
+{
+  "api_tokens": {
+    "org_123": "encrypted:gAAAAABh..."
+  }
+}
+```
+
+Configure a chave de criptografia via variável de ambiente:
+```bash
+export NIBO_ENCRYPTION_KEY="sua_chave_secreta_aqui"
+```
+
+**Avisos de Segurança:**
+- O sistema emite warnings se tokens estiverem em texto plano
+- Recomenda-se usar variáveis de ambiente ou criptografia
+- Arquivos de configuração devem ter permissões restritas (600 no Linux/Mac)
 
 ## Uso
+
+### Interface de Linha de Comando (CLI)
+
+O projeto agora usa um CLI unificado através do arquivo `manage.py`:
+
+```bash
+# Comandos de Empresa
+python manage.py empresa organizacoes
+python manage.py empresa clientes --org org_123
+python manage.py empresa agendamentos-receber --org org_123
+
+# Comandos de Obrigações
+python manage.py obrigacoes escritorios
+python manage.py obrigacoes clientes
+python manage.py obrigacoes obrigacoes --cliente "Nome Cliente"
+
+# Ver ajuda
+python manage.py empresa --help
+python manage.py obrigacoes --help
+```
+
+### Uso Programático
 
 ### Nibo Empresa
 
 ```python
-from nibo_api.config import NiboConfig
+from nibo_api.config import NiboSettings
 from nibo_api.empresa.client import NiboEmpresaClient
 
-# Inicializa o cliente
-config = NiboConfig()
-client = NiboEmpresaClient(config)
+# Inicializa o cliente com organização específica
+config = NiboSettings()
+
+# Por ID da organização
+client = NiboEmpresaClient(config, organizacao_id="org_123")
+
+# Ou por código simplificado
+client = NiboEmpresaClient(config, organizacao_codigo="empresa_principal")
 
 # Lista clientes
 clientes = client.clientes.listar()
@@ -92,12 +183,12 @@ agendamento = client.agendamentos_receber.agendar(
 ### Nibo Obrigações
 
 ```python
-from nibo_api.config import NiboConfig
+from nibo_api.config import NiboSettings
 from nibo_api.obrigacoes.client import NiboObrigacoesClient
 from uuid import UUID
 
 # Inicializa o cliente
-config = NiboConfig()
+config = NiboSettings()
 client = NiboObrigacoesClient(config)
 
 # Lista escritórios
@@ -142,7 +233,7 @@ tarefa = client.tarefas.criar(
 nibo-api/
 ├── nibo_api/
 │   ├── __init__.py
-│   ├── config.py                    # Gerenciamento de configuração
+│   ├── settings.py                  # Gerenciamento de configuração
 │   ├── common/                       # Componentes compartilhados
 │   │   ├── client.py                # Cliente HTTP base
 │   │   ├── models.py                 # Modelos de dados
@@ -172,7 +263,8 @@ nibo-api/
 ├── tests/                            # Testes
 │   ├── test_empresa/
 │   └── test_obrigacoes/
-├── config.json                       # Arquivo de configuração
+├── settings.json                     # Arquivo de configuração
+├── manage.py                         # CLI unificado
 ├── requirements.txt
 └── README.md
 ```

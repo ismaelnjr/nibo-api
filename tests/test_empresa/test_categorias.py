@@ -3,7 +3,7 @@ Testes para interface de categorias do Nibo Empresa
 """
 import unittest
 from uuid import UUID
-from nibo_api.config import NiboConfig
+from nibo_api.settings import NiboSettings
 from nibo_api.empresa.client import NiboEmpresaClient
 
 
@@ -12,7 +12,7 @@ class TestCategorias(unittest.TestCase):
     
     def setUp(self):
         """Configuração inicial dos testes"""
-        self.config = NiboConfig()
+        self.config = NiboSettings()
         self.client = NiboEmpresaClient(self.config)
     
     def test_listar_categorias(self):
