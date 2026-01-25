@@ -34,3 +34,13 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Arquivos de build e distribuição
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Arquivos de publicação
+*.whl
+

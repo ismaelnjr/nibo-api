@@ -6,8 +6,45 @@ Cliente Python para integração com a API do Nibo, dividido em dois módulos pr
 
 ## Instalação
 
+### Instalação do Pacote
+
+#### Instalação Local (desenvolvimento)
+```bash
+pip install -e .
+```
+
+#### Instalação a partir do código-fonte
+```bash
+git clone https://github.com/ismaelnjr/nibo-api.git
+cd nibo-api
+pip install .
+```
+
+#### Instalação via pip (após publicação no PyPI)
+```bash
+pip install nibo-api
+```
+
+**Nota**: Para instruções detalhadas sobre publicação no PyPI, consulte [PUBLISH.md](PUBLISH.md).
+
+### Instalação de Dependências (sem instalar o pacote)
+
+Se você quiser apenas instalar as dependências sem instalar o pacote:
 ```bash
 pip install -r requirements.txt
+```
+
+### Verificar Instalação
+
+Após instalar o pacote, você pode verificar se está funcionando:
+
+```bash
+# Testar imports
+python -c "import nibo_api; print(nibo_api.__version__)"
+python -c "from nibo_api import NiboEmpresaClient, NiboObrigacoesClient"
+
+# Ou usar o script de teste
+python test_install.py
 ```
 
 ## Configuração
