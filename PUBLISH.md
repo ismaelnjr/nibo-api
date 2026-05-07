@@ -82,7 +82,16 @@ O workflow `publish.yml` já está configurado para usar OIDC (OpenID Connect), 
    - Vá em https://pypi.org/manage/account/publishing/
    - Adicione o GitHub como provedor confiável
 
-2. Crie uma release no GitHub - o workflow será executado automaticamente
+2. Publique por tag (recomendado):
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+O workflow `publish.yml` será executado automaticamente ao fazer push de tags `v*`.
+
+3. Alternativamente, crie uma release no GitHub - o workflow também será executado automaticamente.
 
 ## Estrutura de Versionamento
 

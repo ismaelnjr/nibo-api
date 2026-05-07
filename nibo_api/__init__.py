@@ -14,7 +14,7 @@ from nibo_api.common.exceptions import (
     NiboRateLimitError
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     'NiboSettings',
