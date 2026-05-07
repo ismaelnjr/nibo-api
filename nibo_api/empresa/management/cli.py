@@ -33,10 +33,25 @@ Exemplos de uso:
   python manage.py empresa agendamentos-receber --org org_123
   python manage.py empresa agendamentos-receber --tipo vencidos --org org_123
   python manage.py empresa agendamentos-receber --cliente "Empresa" --org org_123
+  python manage.py empresa agendamentos-receber --data-inicio "2025-01-01" --data-fim "2025-01-31" --org org_123
 
   # Listar agendamentos de pagamento
   python manage.py empresa agendamentos-pagar --org org_123
   python manage.py empresa agendamentos-pagar --tipo vencidos --org org_123
+  python manage.py empresa agendamentos-pagar --data-inicio "2025-01-01" --data-fim "2025-01-31" --org org_123
+
+  # Listar agendamentos a pagar e a receber juntos por período
+  python manage.py empresa agendamentos-pagar-receber-periodo --data-inicio "2025-01-01" --data-fim "2025-01-31" --org org_123 --json
+
+  # Listar pagamentos e recebimentos realizados por período
+  python manage.py empresa pagamentos-recebimentos-periodo --data-inicio "01/01/2025" --data-fim "31/01/2025" --org org_123
+  python manage.py empresa pagamentos-recebimentos-periodo --data-inicio "2025-01-01" --data-fim "2025-01-31" --org org_123 --json
+
+  # Listar apenas pagamentos por período
+  python manage.py empresa pagamentos-periodo --data-inicio "2025-01-01" --data-fim "2025-01-31" --org org_123 --json
+
+  # Listar apenas recebimentos por período
+  python manage.py empresa recebimentos-periodo --data-inicio "2025-01-01" --data-fim "2025-01-31" --org org_123 --json
 
   # Criar agendamento de recebimento
   python manage.py empresa criar-agendamento-receber --cliente "uuid" --categoria "uuid" --valor 1000.00 --data-agendamento "01/01/2025" --data-vencimento "31/01/2025" --descricao "Recebimento" --org org_123

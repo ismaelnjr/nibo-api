@@ -46,12 +46,8 @@ class ArquivosInterface:
             if description:
                 data['description'] = description
             
-            # Usa requests diretamente para upload de arquivo
-            import requests
             url = f"{self.client.base_url}/files"
-            # Usa os headers da sessão que já contém o token correto
-            headers = self.client.session.headers.copy()
-            
-            response = requests.post(url, files=files, data=data, headers=headers)
+            # Reaproveita a sessão do cliente (headers + config SSL/CA bundle)
+            response = self.client.session.post(url, files=files, data=data)
             return self.client._handle_response(response)
 

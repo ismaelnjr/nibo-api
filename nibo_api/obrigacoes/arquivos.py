@@ -85,7 +85,8 @@ class ArquivosInterface:
         response = requests.put(
             shared_access_signature,
             data=file_content,
-            headers=headers
+            headers=headers,
+            verify=self.client.session.verify
         )
         response.raise_for_status()
         return response

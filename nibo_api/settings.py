@@ -4,7 +4,7 @@ Sistema de configuração para a API Nibo
 import os
 import warnings
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 
 try:
     from cryptography.fernet import Fernet
@@ -375,3 +375,40 @@ class NiboSettings:
             os.getenv("NIBO_OBRIGACOES_USER_ID")
             or self._settings_data.get("obrigacoes_user_id")
         )
+
+    @property
+    def ca_bundle_path(self) -> Optional[str]:
+        """
+        Caminho para bundle de certificados CA (arquivo .pem).
+
+        Prioridade:
+        1) NIBO_CA_BUNDLE (variável de ambiente)
+        2) ca_bundle_path (settings.json)
+        """
+        return (
+            os.getenv("NIBO_CA_BUNDLE")
+            or self._settings_data.get("ca_bundle_path")
+        )
+
+    @property
+    def ssl_verify(self) -> Union[bool, str]:
+        """
+        Configuração de verificação SSL para requests.
+
+        Retorna:
+            - True: valida certificado com trust store padrão
+            - False: desabilita validação (não recomendado)
+            - str: caminho de arquivo CA bundle (.pem)
+        """
+        # Se houver bundle explícito, prioriza esse caminho
+        ca_bundle = self.ca_bundle_path
+        if ca_bundle:
+            return ca_bundle
+
+        # Valor explícito por env (aceita true/false/1/0/yes/no)
+        env_verify = os.getenv("NIBO_SSL_VERIFY")
+        if env_verify is not None:
+            return env_verify.strip().lower() in ("1", "true", "yes", "on")
+
+        # Valor do settings.json; fallback seguro em True
+        return self._settings_data.get("ssl_verify", True)

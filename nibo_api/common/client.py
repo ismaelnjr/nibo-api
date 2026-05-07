@@ -1,6 +1,15 @@
 """
 Cliente HTTP base para comunicação com a API Nibo
 """
+# Tenta usar o trust store nativo do SO (Windows/macOS/Linux).
+# Isso ajuda em ambientes corporativos com inspeção SSL e CA interna.
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except Exception:
+    # Fallback silencioso para comportamento padrão do requests/certifi.
+    pass
+
 import requests
 from typing import Optional, Dict, Any, List
 from urllib.parse import urlencode
@@ -44,6 +53,7 @@ class BaseClient:
         self.session.headers.update({
             "accept": "application/json"
         })
+        self.session.verify = self.config.ssl_verify
         
         # Obtém token baseado na organização apenas se fornecido
         # (subclasses como NiboObrigacoesClient configuram seus próprios headers)

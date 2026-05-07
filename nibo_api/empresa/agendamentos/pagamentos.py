@@ -3,6 +3,7 @@ Interface para pagamentos (contas pagas) no Nibo Empresa
 """
 from typing import Optional, Dict, Any
 from uuid import UUID
+from datetime import datetime
 
 from nibo_api.common.client import BaseClient
 
@@ -39,12 +40,55 @@ class PagamentosInterface:
             Dicionário com 'items' (lista de pagamentos) e 'count' (total)
         """
         return self.client.get(
-            "/entries/debit",
+            "/payments",
             odata_filter=odata_filter,
             odata_orderby=odata_orderby,
             odata_top=odata_top,
             odata_skip=odata_skip
         )
+
+    def listar_por_periodo(
+        self,
+        data_inicio: str,
+        data_fim: str,
+        odata_orderby: str = "date desc",
+        odata_top: Optional[int] = None,
+        odata_skip: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Lista pagamentos realizados no período informado.
+
+        Aceita data em DD/MM/YYYY ou YYYY-MM-DD.
+        """
+        inicio = self._parse_data(data_inicio)
+        fim = self._parse_data(data_fim)
+        if not inicio or not fim:
+            raise ValueError("Datas inválidas. Use DD/MM/YYYY ou YYYY-MM-DD.")
+        if inicio > fim:
+            raise ValueError("Data inicial não pode ser maior que data final.")
+
+        filtro = (
+            f"date ge {inicio.strftime('%Y-%m-%dT00:00:00Z')} "
+            f"and date le {fim.strftime('%Y-%m-%dT23:59:59Z')}"
+        )
+        return self.listar(
+            odata_filter=filtro,
+            odata_orderby=odata_orderby,
+            odata_top=odata_top,
+            odata_skip=odata_skip
+        )
+
+    @staticmethod
+    def _parse_data(data_str: str):
+        if not data_str:
+            return None
+        valor = data_str.strip()
+        for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(valor, fmt)
+            except ValueError:
+                continue
+        return None
     
     def criar(
         self,
@@ -81,7 +125,7 @@ class PagamentosInterface:
         
         payload.update(kwargs)
         
-        return self.client.post("/entries/debit", json_data=payload)
+        return self.client.post("/payments", json_data=payload)
     
     def criar_json(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -93,7 +137,7 @@ class PagamentosInterface:
         Returns:
             Dados do pagamento criado
         """
-        return self.client.post("/entries/debit", json_data=payload)
+        return self.client.post("/payments", json_data=payload)
     
     def excluir(self, entry_id: UUID) -> Dict[str, Any]:
         """
@@ -105,5 +149,5 @@ class PagamentosInterface:
         Returns:
             Resposta da API
         """
-        return self.client.delete(f"/entries/debit/{entry_id}")
+        return self.client.delete(f"/payments/{entry_id}")
 
